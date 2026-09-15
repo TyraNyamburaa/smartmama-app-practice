@@ -53,10 +53,10 @@ ALLOWED_ORIGINS = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=["*"], 
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PATCH", "OPTIONS", "DELETE"],
-    allow_headers=["Content-Type", "Authorization"],
+    allow_methods=["*"], 
+    allow_headers=["*"], 
 )
 
 app.include_router(visit_router, prefix="/api/v1")
