@@ -22,9 +22,10 @@ from smartmama.routers.chv_verification_router import router as chv_verification
 from smartmama.routers.ticket_router import router as ticket_router
 from smartmama.routers.audit_log_router import router as audit_log_router
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-   # Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
     yield
 
 app = FastAPI(
@@ -53,10 +54,10 @@ ALLOWED_ORIGINS = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"], 
-    allow_headers=["*"], 
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(visit_router, prefix="/api/v1")
@@ -69,10 +70,11 @@ app.include_router(portal_router, prefix="/api/v1")
 app.include_router(pdf_router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(supervisor_router, prefix="/api/v1")
-app.include_router(admin_router, prefix= "/api/v1")
+app.include_router(admin_router, prefix="/api/v1")
 app.include_router(chv_verification_router, prefix="/api/v1")
 app.include_router(ticket_router, prefix="/api/v1")
 app.include_router(audit_log_router, prefix="/api/v1")
+
 
 @app.get("/", tags=["System Status"])
 def read_root():
@@ -80,6 +82,7 @@ def read_root():
         "status": "online",
         "service": "SmartMama Core Framework",
     }
+
 
 if __name__ == "__main__":
     import uvicorn
@@ -90,8 +93,3 @@ if __name__ == "__main__":
         port=8000,
         reload=True,
     )
-
-
-
-
-
