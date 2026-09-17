@@ -42,4 +42,3 @@ class IDAnalyzerService:
         }
 
 id_analyzer_service = IDAnalyzerService()
-
