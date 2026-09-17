@@ -2,7 +2,7 @@ import os
 import httpx
 
 IDANALYZER_API_KEY = os.getenv("IDANALYZER_API_KEY")
-DOCUPASS_ENDPOINT = "https://api2-eu.idanalyzer.com/docupass"
+DOCUPASS_ENDPOINT = "https://idanalyzer.com"
 
 class IDAnalyzerService:
     def __init__(self):
@@ -10,8 +10,12 @@ class IDAnalyzerService:
         self.endpoint = DOCUPASS_ENDPOINT
 
     async def create_docupass_session(self, chv_id: str, callback_url: str):
+        headers = {
+            "X-API-KEY": self.api_key,
+            "Content-Type": "application/json"
+        }
+
         payload = {
-            "apikey": self.api_key,
             "reference": chv_id,
             "callback_url": callback_url,
             "output": "json",
@@ -21,7 +25,7 @@ class IDAnalyzerService:
         }
 
         async with httpx.AsyncClient(timeout=30) as client:
-            resp = await client.post(self.endpoint, data=payload)
+            resp = await client.post(self.endpoint, headers=headers, json=payload)
             resp.raise_for_status()
             return resp.json()
 
@@ -38,3 +42,4 @@ class IDAnalyzerService:
         }
 
 id_analyzer_service = IDAnalyzerService()
+
