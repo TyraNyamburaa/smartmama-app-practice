@@ -121,3 +121,13 @@ def reject_certificate(db: Session, chv: CHV, supervisor_id: UUID, supervisor_us
                                  action_type="certificate_rejected", target_id=chv.chv_id, success=True, details=notes)
     db.commit(); db.refresh(chv)
     return chv
+
+
+def delete_profile(db: Session, chv: CHV) -> None:
+    user_id = chv.user_id
+    chv_repository.delete_chv_profile(db, chv.chv_id)
+    # Soft delete user - deactivate instead of hard delete
+    user = user_repository.get_user_by_id(db, user_id)
+    if user:
+        user.is_active = False
+        db.commit()
