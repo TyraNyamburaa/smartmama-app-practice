@@ -1,6 +1,7 @@
 from uuid import UUID
 import os
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from fastapi.security import HTTPAuthorizationCredentials
 from database import get_db
@@ -115,7 +116,9 @@ def approve_cert(chv_id: UUID, db: Session = Depends(get_db),
                   current_supervisor: TokenPayload = Depends(require_supervisor)):
     chv = chv_repository.get_chv_profile(db, chv_id)
     if not chv: raise HTTPException(404, "CHV not found")
-    sup= supervisor_repository.get_supervisor_profile_by_user_id(db, current_supervisor.user_id)
+    sup = supervisor_repository.get_supervisor_profile_by_user_id(db, current_supervisor.user_id)
+    if not sup:
+        raise HTTPException(404, "Supervisor profile not found")
     updated = chv_service.approve_certificate(db, chv, sup.supervisor_id, current_supervisor.user_id)
     return {
         "chv_id": updated.chv_id,
@@ -151,7 +154,17 @@ def update_chv_profile(
     chv: CHV = Depends(require_chv)
 ):
     try:
-        return chv_service.update_profile(db=db, chv=chv, data=data)
+        updated_chv = chv_service.update_profile(db=db, chv=chv, data=data)
+        return {
+            "chv_id": updated_chv.chv_id,
+            "user_id": updated_chv.user_id,
+            "first_name": updated_chv.user.person.first_name,
+            "last_name": updated_chv.user.person.last_name,
+            "email": updated_chv.user.email,
+            "phone_number": updated_chv.user.person.phone_number,
+            "certificate_status": updated_chv.certificate_status,
+            "created_at": updated_chv.created_at,
+        }
     except ValueError as error:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -171,7 +184,8 @@ async def upload_profile_photo(
     upload_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "storage", "profile_photos")
     os.makedirs(upload_dir, exist_ok=True)
 
-    file_ext = os.path.splitext(file.filename)[1].lower()
+    filename = file.filename or ""
+    file_ext = os.path.splitext(filename)[1].lower()
     if file_ext not in [".jpg", ".jpeg", ".png"]:
         raise HTTPException(status_code=400, detail="Invalid file type. Only JPG and PNG allowed.")
 
@@ -230,6 +244,8 @@ def reject_cert(chv_id: UUID, notes: str, db: Session = Depends(get_db),
     chv = chv_repository.get_chv_profile(db, chv_id)
     if not chv: raise HTTPException(404, "CHV not found")
     sup = supervisor_repository.get_supervisor_profile_by_user_id(db, current_supervisor.user_id)
+    if not sup:
+        raise HTTPException(404, "Supervisor profile not found")
     updated = chv_service.reject_certificate(db, chv, sup.supervisor_id, current_supervisor.user_id, notes)
     return {
         "chv_id": updated.chv_id,
