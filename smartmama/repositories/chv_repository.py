@@ -39,11 +39,8 @@ class CHVRepository:
         db.refresh(chv)
         return chv
 
-    def delete_chv_profile(self, db: Session, chv: CHV) -> CHV:
-        if chv.user:
-            chv.is_active = False
-            db.commit()
-            db.refresh(chv)
-        return chv
+    def delete_chv_profile(self, db: Session, chv: CHV) -> None:
+        db.delete(chv)
+        db.commit()
 
 chv_repository = CHVRepository()
