@@ -95,7 +95,7 @@ async def start_docupass(current_chv: TokenPayload = Depends(require_chv), db: S
         raise HTTPException(404, "CHV profile not found")
 
     # Callback URL should point to THIS backend's docupass-callback endpoint
-    callback_url = "https://smartmama-api.onrender.com/api/v1/chv-verification/docupass-callback"
+    callback_url = "https://smartmama-app-practice.onrender.com"
 
     session = await id_analyzer_service.create_docupass_session(str(chv.chv_id), callback_url)
 
