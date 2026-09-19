@@ -7,7 +7,6 @@ from database import get_db
 from smartmama.models.chv import CHV
 from smartmama.security import require_chv, TokenPayload
 from smartmama.services.id_analyzer_service import id_analyzer_service
-from smartmama.services.attachment_scanner_service import attachment_scanner_service
 from smartmama.services.chv_verification_service import (
     mark_chv_pending_verification,
     apply_docupass_result_to_chv,
@@ -138,22 +137,6 @@ async def submit_certificate(
     if not chv:
         raise HTTPException(status_code=404, detail="CHV profile not found.")
 
-    try:
-        scan_result = await attachment_scanner_service.scan_file_url(document_url)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Attachment scan failed: {e}")
-
-    is_safe = attachment_scanner_service.is_file_safe(scan_result)
-    if not is_safe:
-        chv.certificate_status = "Rejected"
-        chv.rejection_notes = "Certificate file failed security scan."
-        db.commit()
-        db.refresh(chv)
-        raise HTTPException(
-            status_code=400,
-            detail="Certificate file is unsafe or malicious. Upload a clean document.",
-        )
-
     updated = mark_chv_pending_verification(
         db=db,
         chv=chv,
@@ -162,7 +145,7 @@ async def submit_certificate(
     )
 
     return {
-        "message": "Certificate submitted and passed security scan.",
+        "message": "Certificate submitted.",
         "certificate_status": updated.certificate_status,
         "chv_id": str(updated.chv_id),
     }
@@ -180,20 +163,8 @@ async def upload_certificate(
 
     document_url = await save_file(file, current_chv.user_id, "certificate")
 
-    try:
-        scan_result = await attachment_scanner_service.scan_file_url(document_url)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Attachment scan failed: {e}")
-
-    is_safe = attachment_scanner_service.is_file_safe(scan_result)
-    if not is_safe:
-        raise HTTPException(
-            status_code=400,
-            detail="Certificate file is unsafe or malicious. Upload a clean document.",
-        )
-
     return {
-        "message": "Certificate uploaded and passed security scan.",
+        "message": "Certificate uploaded.",
         "document_url": document_url,
     }
 
@@ -210,20 +181,8 @@ async def upload_id_proof(
 
     document_url = await save_file(file, current_chv.user_id, "id_proof")
 
-    try:
-        scan_result = await attachment_scanner_service.scan_file_url(document_url)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Attachment scan failed: {e}")
-
-    is_safe = attachment_scanner_service.is_file_safe(scan_result)
-    if not is_safe:
-        raise HTTPException(
-            status_code=400,
-            detail="ID proof file is unsafe or malicious. Upload a clean document.",
-        )
-
     return {
-        "message": "ID proof uploaded and passed security scan.",
+        "message": "ID proof uploaded.",
         "document_url": document_url,
     }
 
