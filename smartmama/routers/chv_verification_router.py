@@ -98,9 +98,10 @@ async def start_docupass(current_chv: TokenPayload = Depends(require_chv), db: S
 
     session = await id_analyzer_service.create_docupass_session(str(chv.chv_id), callback_url)
 
+    # V2 API returns 'url' and 'session_id'
     return {
         "docupass_url": session.get("url"),
-        "reference": session.get("reference"),
+        "reference": session.get("session_id"),
     }
 
 
@@ -111,10 +112,11 @@ async def docupass_callback(request: Request, db: Session = Depends(get_db)):
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid JSON payload")
 
-    reference = payload.get("reference")
+    # V2 API uses session_id, legacy uses reference
+    reference = payload.get("session_id") or payload.get("reference")
 
     if not reference:
-        raise HTTPException(400, "Missing reference")
+        raise HTTPException(status_code=400, detail="Missing reference")
 
     chv = db.query(CHV).filter(CHV.chv_id == UUID(reference)).first()
     if not chv:

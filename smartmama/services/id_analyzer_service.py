@@ -49,7 +49,7 @@ class IDAnalyzerService:
 
     async def create_docupass_session(self, chv_id: str, callback_url: str) -> dict:
         """
-        Creates a hosted DocuPass verification link for the user.
+        Creates a hosted DocuPass verification link for the user (V2 API).
         """
         headers = {
             "X-API-KEY": self.api_key,
@@ -57,14 +57,10 @@ class IDAnalyzerService:
         }
 
         payload = {
-            "company_name": "SmartMama",
             "reference": chv_id,
             "callback_url": callback_url,
-            # 1 = Document verification + Face verification
-            "verification_mode": 1, 
-            # Forces web-camera liveness scan execution
-            "biometric_photo": True,
-            "liveness_check": True
+            "max_attempt": 3,
+            "biometric": 1
         }
 
         async with httpx.AsyncClient(timeout=30) as client:
