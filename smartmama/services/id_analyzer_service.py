@@ -5,7 +5,7 @@ IDANALYZER_API_KEY = os.getenv("IDANALYZER_API_KEY")
 # Base endpoint for Core Scan API
 CORE_SCAN_ENDPOINT = "https://idanalyzer.com"
 # Dedicated endpoint for DocuPass
-DOCUPASS_ENDPOINT = "https://api.idanalyzer.com"
+DOCUPASS_ENDPOINT = "https://idanalyzer.com"
 
 class IDAnalyzerService:
     def __init__(self):
