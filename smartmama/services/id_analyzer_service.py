@@ -84,3 +84,6 @@ class IDAnalyzerService:
             "document_type": payload.get("documentType"),
             "raw": payload
         }
+
+
+id_analyzer_service = IDAnalyzerService()
