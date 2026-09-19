@@ -93,16 +93,20 @@ async def start_docupass(current_chv: TokenPayload = Depends(require_chv), db: S
     if not chv:
         raise HTTPException(404, "CHV profile not found")
 
-    # Callback URL should point to THIS backend's docupass-callback endpoint
     callback_url = "https://smartmama-app-practice.onrender.com"
 
-    session = await id_analyzer_service.create_docupass_session(str(chv.chv_id), callback_url)
-
-    # V2 API returns 'url' and 'session_id'
-    return {
-        "docupass_url": session.get("url"),
-        "reference": session.get("session_id"),
-    }
+    try:
+        session = await id_analyzer_service.create_docupass_session(str(chv.chv_id), callback_url)
+        
+        return {
+            "docupass_url": session.get("url"),
+            "reference": session.get("session_id"),
+        }
+    except ValueError as val_err:
+        # Returns a clean 400 Bad Request with the actual IDAnalyzer error message
+        raise HTTPException(status_code=400, detail=str(val_err))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Failed to communicate with IDAnalyzer: {e}")
 
 
 @router.post("/docupass-callback")
