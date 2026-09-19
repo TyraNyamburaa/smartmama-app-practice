@@ -4,8 +4,8 @@ import httpx
 IDANALYZER_API_KEY = os.getenv("IDANALYZER_API_KEY")
 # Base endpoint for Core Scan API
 CORE_SCAN_ENDPOINT = "https://idanalyzer.com"
-# Dedicated endpoint for DocuPass (trailing slash prevents 307 redirect)
-DOCUPASS_ENDPOINT = "https://idanalyzer.com/docupass/"
+# Dedicated endpoint for DocuPass
+DOCUPASS_ENDPOINT = "https://api.idanalyzer.com"
 
 class IDAnalyzerService:
     def __init__(self):
