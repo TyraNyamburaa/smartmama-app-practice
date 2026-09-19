@@ -59,6 +59,7 @@ class IDAnalyzerService:
 
         # Request parameters mapped out for the V2 JSON structure
         payload = {
+            "profile": "eddddd6fcaed40e19afd6b9951bb0e76",
             "reference": chv_id,
             "callback_url": callback_url,
             "biometric": 1, 
