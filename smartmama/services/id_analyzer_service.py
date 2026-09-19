@@ -50,30 +50,30 @@ class IDAnalyzerService:
     async def create_docupass_session(self, chv_id: str, callback_url: str) -> dict:
         """
         Creates a hosted DocuPass verification link using IDAnalyzer API V2.
-        Explicitly handles and raises exceptions on identity provider errors.
         """
-        # API V2 utilizes standard Bearer tokens for authentication
+        # CRITICAL REPAIR: API v2 requires the X-API-KEY header precisely in this layout
         headers = {
-            "Authorization": f"Bearer {self.api_key}",
+            "X-API-KEY": self.api_key,
             "Content-Type": "application/json"
         }
 
+        # Request parameters mapped out for the V2 JSON structure
         payload = {
             "reference": chv_id,
             "callback_url": callback_url,
-            "biometric": 1,
+            "biometric": 1, 
             "max_attempt": 3
         }
 
         async with httpx.AsyncClient(timeout=30) as client:
             resp = await client.post(self.docupass_endpoint, headers=headers, json=payload)
             
-            # Catch standard network/HTTP status errors (e.g., 400, 401, 403, 500)
+            # Catch raw HTTP protocol exceptions directly (e.g., 404, 500)
             resp.raise_for_status()
             
             response_data = resp.json()
 
-            # EXPLICIT ERROR CHECK: Catch successful HTTP transfers that carry internal API failure keys
+            # Process inside the JSON payload to safely catch API failure messages
             if "error" in response_data:
                 error_msg = response_data["error"].get("message", "Unknown IDAnalyzer error")
                 error_code = response_data["error"].get("code", "N/A")
