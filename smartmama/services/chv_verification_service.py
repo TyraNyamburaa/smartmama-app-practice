@@ -17,10 +17,16 @@ def mark_chv_pending_verification(db: Session, chv: CHV, document_url: str, cert
 
 
 def apply_docupass_result_to_chv(db: Session, chv: CHV, parsed: dict):
-    chv.certificate_status = "Pending"
+    if parsed.get("is_approved") is True:
+        chv.certificate_status = "Verified"
+    else:
+        chv.certificate_status = "Rejected"
+        chv.rejection_notes = "Automated DocuPass verification failed."
+        
     db.commit()
     db.refresh(chv)
     return chv
+
 
 
 def supervisor_verify_chv(db: Session, chv_id: UUID, supervisor_id: UUID, decision: str, rejection_notes: str | None):
