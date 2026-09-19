@@ -66,7 +66,13 @@ class IDAnalyzerService:
         async with httpx.AsyncClient(timeout=30) as client:
             resp = await client.post(self.docupass_endpoint, headers=headers, json=payload)
             resp.raise_for_status()
-            return resp.json()
+            data = resp.json()
+            print(f"=== IDANALYZER V2 RESPONSE: {data}")
+            # V2 API returns 'url' and 'session_id' - map to expected fields
+            return {
+                "docupass_url": data.get("url"),
+                "reference": data.get("session_id"),
+            }
 
     def parse_docupass_result(self, payload: dict) -> dict:
         """
