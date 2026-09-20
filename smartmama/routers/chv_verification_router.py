@@ -186,6 +186,8 @@ async def upload_id_proof(
         raise HTTPException(status_code=404, detail="CHV profile not found.")
 
     document_url = await save_file(file, current_chv.user_id, "id_proof")
+    chv.id_proof_url = document_url
+    db.commit()
 
     return {
         "message": "ID proof uploaded.",
@@ -208,6 +210,8 @@ async def get_verification_status(
         "document_url": chv.document_url,
         "verified_at": chv.verified_at,
         "rejection_notes": chv.rejection_notes,
+        "has_id_proof": chv.id_proof_url is not None,
+        "id_proof_url": chv.id_proof_url,
     }
 
 
